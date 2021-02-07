@@ -1,26 +1,26 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using WookieBooks.Data;
 using WookieBooks.Models;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace WookieBooks.Controllers
 {
     [Route("api/[controller]")]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ApiController]
     public class BooksController : ControllerBase
     {
-        WookieBooksDbContext _context;
+        readonly WookieBooksDbContext _context;
         public BooksController(WookieBooksDbContext context)
         {
             _context = context;
         }
         // GET: api/<BooksController>
         [HttpGet]
+        [ProducesResponseType(typeof(List<Book>), StatusCodes.Status200OK)]
         public IList<Book> Get()
         {
             return _context.Books.ToList();
@@ -28,15 +28,23 @@ namespace WookieBooks.Controllers
 
         // GET api/<BooksController>/5
         [HttpGet("{id}")]
-        public Book Get(int id)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(Book), StatusCodes.Status200OK)]
+        public IActionResult Get(int id)
         {
-            return _context.Books.Find(id);
+            var book = _context.Books.Find(id);
+            if (book == null)
+            {
+                return StatusCode(StatusCodes.Status404NotFound);
+            }
+            else return StatusCode(StatusCodes.Status200OK, book);
         }
 
         // POST api/<BooksController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public void Post([FromBody] Book book)
         {
+            _context.Books.Add(book);
         }
 
         // PUT api/<BooksController>/5
