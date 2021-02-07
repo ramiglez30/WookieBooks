@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using WookieBooks.Data;
 using WookieBooks.Models;
 
@@ -35,22 +36,36 @@ namespace WookieBooks.Controllers
             var book = _context.Books.Find(id);
             if (book == null)
             {
-                return StatusCode(StatusCodes.Status404NotFound);
+                return new NotFoundResult();
             }
-            else return StatusCode(StatusCodes.Status200OK, book);
+
+            else return new OkObjectResult(book);
         }
 
         // POST api/<BooksController>
         [HttpPost]
-        public void Post([FromBody] Book book)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> Post([FromBody] Book book)
         {
             _context.Books.Add(book);
+            await _context.SaveChangesAsync();
+
+            return new OkResult();
         }
 
         // PUT api/<BooksController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> Put(int id, [FromBody] Book inputBook)
         {
+            if (id != inputBook.Id) return new BadRequestResult();
+
+            _context.Books.Update(inputBook);
+            await _context.SaveChangesAsync();
+
+            return new OkResult();
         }
 
         // DELETE api/<BooksController>/5
