@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,18 +23,18 @@ namespace WookieBooks.Controllers
         // GET: api/<BooksController>
         [HttpGet]
         [ProducesResponseType(typeof(List<Book>), StatusCodes.Status200OK)]
-        public IList<Book> Get()
+        public async Task<IList<Book>> GetAsync()
         {
-            return _context.Books.ToList();
+            return await _context.Books.ToListAsync();
         }
 
         // GET api/<BooksController>/5
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(Book), StatusCodes.Status200OK)]
-        public IActionResult Get(int id)
+        public async Task<IActionResult> GetAsync(int id)
         {
-            var book = _context.Books.Find(id);
+            var book = await _context.Books.FindAsync(id);
             if (book == null)
             {
                 return new NotFoundResult();
@@ -46,7 +47,7 @@ namespace WookieBooks.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> Post([FromBody] Book book)
+        public async Task<IActionResult> PostAsync([FromBody] Book book)
         {
             _context.Books.Add(book);
             await _context.SaveChangesAsync();
@@ -59,7 +60,7 @@ namespace WookieBooks.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> Put(int id, [FromBody] Book inputBook)
+        public async Task<IActionResult> PutAsync(int id, [FromBody] Book inputBook)
         {
             if (id != inputBook.Id) return new BadRequestResult();
             
@@ -82,7 +83,7 @@ namespace WookieBooks.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(Book), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> DeleteAsync(int id)
         {
             var book = _context.Books.Find(id);
             if (book == null) return new NotFoundResult();
