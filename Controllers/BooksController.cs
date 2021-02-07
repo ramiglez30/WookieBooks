@@ -57,12 +57,22 @@ namespace WookieBooks.Controllers
         // PUT api/<BooksController>/5
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> Put(int id, [FromBody] Book inputBook)
         {
             if (id != inputBook.Id) return new BadRequestResult();
+            
+            var book = _context.Books.Find(id);
+            if (book == null) return new NotFoundResult();
 
-            _context.Books.Update(inputBook);
+            book.Author = inputBook.Author;
+            book.CoverImage = inputBook.CoverImage;
+            book.Description = inputBook.Description;
+            book.Price = inputBook.Price;
+            book.Title = inputBook.Title;
+
+            _context.Books.Update(book);
             await _context.SaveChangesAsync();
 
             return new OkResult();
@@ -70,8 +80,16 @@ namespace WookieBooks.Controllers
 
         // DELETE api/<BooksController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(Book), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Delete(int id)
         {
+            var book = _context.Books.Find(id);
+            if (book == null) return new NotFoundResult();
+
+            _context.Books.Remove(book);
+            await _context.SaveChangesAsync();
+            return new OkResult();
         }
     }
 }
